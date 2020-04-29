@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1563288917323.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "2711835605",
+    "id" : "96736E5D",
+    "lastKnownWriteTime" : 1573141167,
+    "last_content_update" : 1573141167549,
+    "path" : "~/ICPI Helper/ICPIHelpers/R/MSD_Import.R",
+    "project_path" : "R/MSD_Import.R",
+    "properties" : {
+        "cursorPosition" : "42,0",
+        "scrollLine" : "23"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

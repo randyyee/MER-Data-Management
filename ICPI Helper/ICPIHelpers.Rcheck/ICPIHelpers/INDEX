@@ -1,0 +1,4 @@
+convert_new_msd_CHIPS   Converts semi-long MSD to wide format for CHIPS
+convert_new_msd_HITS    Converts the semi-long MSD into a wide format
+                        with QTRs, APR, and Target for every year
+read_new_msd            Read semi-long MSD

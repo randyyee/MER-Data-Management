@@ -1,0 +1,180 @@
+* using log directory 'C:/Users/pcx5/Documents/ICPI Helper/ICPIHelpers.Rcheck'
+* using R version 3.6.1 (2019-07-05)
+* using platform: x86_64-w64-mingw32 (64-bit)
+* using session charset: ISO8859-1
+* using options '--no-manual --as-cran'
+* checking for file 'ICPIHelpers/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'ICPIHelpers' version '0.1.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking serialization versions ... OK
+* checking whether package 'ICPIHelpers' can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... WARNING
+Non-standard license specification:
+  What license is it under?
+Standardizable: FALSE
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'::' or ':::' imports not declared from:
+  'data.table' 'dplyr' 'stringr' 'tibble'
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+convert_new_msd_CHIPS: no visible global function definition for '%>%'
+convert_new_msd_CHIPS: no visible global function definition for
+  'gather'
+convert_new_msd_CHIPS: no visible binding for global variable 'targets'
+convert_new_msd_CHIPS: no visible binding for global variable
+  'cumulative'
+convert_new_msd_CHIPS: no visible global function definition for
+  'mutate'
+convert_new_msd_CHIPS: no visible binding for global variable
+  'fiscal_year'
+convert_new_msd_CHIPS: no visible binding for global variable 'period'
+convert_new_msd_CHIPS: no visible global function definition for
+  'select'
+convert_new_msd_CHIPS: no visible global function definition for
+  'group_by_at'
+convert_new_msd_CHIPS: no visible global function definition for 'vars'
+convert_new_msd_CHIPS: no visible binding for global variable
+  'operatingunit'
+convert_new_msd_CHIPS: no visible binding for global variable
+  'modality'
+convert_new_msd_CHIPS: no visible binding for global variable
+  'fiscalperiod'
+convert_new_msd_CHIPS: no visible global function definition for
+  'summarise'
+convert_new_msd_CHIPS: no visible binding for global variable 'value'
+convert_new_msd_CHIPS: no visible global function definition for
+  'ungroup'
+convert_new_msd_CHIPS: no visible global function definition for
+  'spread'
+convert_new_msd_CHIPS: no visible binding for global variable 'Value'
+convert_new_msd_HITS: no visible global function definition for '%>%'
+convert_new_msd_HITS: no visible global function definition for
+  'gather'
+convert_new_msd_HITS: no visible binding for global variable 'targets'
+convert_new_msd_HITS: no visible binding for global variable
+  'cumulative'
+convert_new_msd_HITS: no visible global function definition for
+  'mutate'
+convert_new_msd_HITS: no visible binding for global variable
+  'fiscal_year'
+convert_new_msd_HITS: no visible binding for global variable 'period'
+convert_new_msd_HITS: no visible global function definition for
+  'select'
+convert_new_msd_HITS: no visible global function definition for
+  'group_by_at'
+convert_new_msd_HITS: no visible global function definition for 'vars'
+convert_new_msd_HITS: no visible binding for global variable
+  'orgunituid'
+convert_new_msd_HITS: no visible binding for global variable 'modality'
+convert_new_msd_HITS: no visible binding for global variable
+  'fiscalperiod'
+convert_new_msd_HITS: no visible global function definition for
+  'summarise'
+convert_new_msd_HITS: no visible binding for global variable 'value'
+convert_new_msd_HITS: no visible global function definition for
+  'ungroup'
+convert_new_msd_HITS: no visible global function definition for
+  'spread'
+convert_new_msd_HITS: no visible binding for global variable 'Value'
+read_new_msd: no visible global function definition for '%>%'
+read_new_msd: no visible binding for global variable 'fiscal_year'
+Undefined global functions or variables:
+  %>% Value cumulative fiscal_year fiscalperiod gather group_by_at
+  modality mutate operatingunit orgunituid period select spread
+  summarise targets ungroup value vars
+* checking Rd files ... WARNING
+prepare_Rd: convert_new_msd_CHIPS.Rd:7-9: Dropping empty section \description
+prepare_Rd: convert_new_msd_CHIPS.Rd:22-28: Dropping empty section \value
+prepare_Rd: convert_new_msd_CHIPS.Rd:35-37: Dropping empty section \note
+prepare_Rd: convert_new_msd_CHIPS.Rd:29-31: Dropping empty section \references
+prepare_Rd: convert_new_msd_CHIPS.Rd:41-43: Dropping empty section \seealso
+checkRd: (5) convert_new_msd_CHIPS.Rd:0-58: Must have a \description
+prepare_Rd: convert_new_msd_HITS.Rd:5-7: Dropping empty section \description
+prepare_Rd: convert_new_msd_HITS.Rd:20-26: Dropping empty section \value
+prepare_Rd: convert_new_msd_HITS.Rd:33-35: Dropping empty section \note
+prepare_Rd: convert_new_msd_HITS.Rd:27-29: Dropping empty section \references
+prepare_Rd: convert_new_msd_HITS.Rd:39-41: Dropping empty section \seealso
+checkRd: (5) convert_new_msd_HITS.Rd:0-56: Must have a \description
+prepare_Rd: read_new_msd.Rd:28-30: Dropping empty section \details
+prepare_Rd: read_new_msd.Rd:31-37: Dropping empty section \value
+prepare_Rd: read_new_msd.Rd:44-46: Dropping empty section \note
+prepare_Rd: read_new_msd.Rd:38-40: Dropping empty section \references
+prepare_Rd: read_new_msd.Rd:50-52: Dropping empty section \seealso
+* checking Rd metadata ... OK
+* checking Rd line widths ... NOTE
+Rd file 'read_new_msd.Rd':
+  \examples lines wider than 100 characters:
+             ignore.case = TRUE)), ~as.double(.)) %>% dplyr::mutate_at(dplyr::vars(dplyr::matches("targets",
+             ignore.case = TRUE)), ~as.double(.)) %>% dplyr::mutate_at(dplyr::vars(dplyr::matches("cumulative",
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from documentation object 'convert_new_msd_CHIPS':
+convert_new_msd_CHIPS
+  Code: function(msd)
+  Docs: function(x)
+  Argument names in code not in docs:
+    msd
+  Argument names in docs not in code:
+    x
+  Mismatches in argument names:
+    Position: 1 Code: msd Docs: x
+
+Codoc mismatches from documentation object 'convert_new_msd_HITS':
+convert_new_msd_HITS
+  Code: function(msd)
+  Docs: function(x)
+  Argument names in code not in docs:
+    msd
+  Argument names in docs not in code:
+    x
+  Mismatches in argument names:
+    Position: 1 Code: msd Docs: x
+
+* checking Rd \usage sections ... OK
+* checking Rd contents ... WARNING
+Auto-generated content requiring editing in Rd object 'convert_new_msd_CHIPS':
+  \keyword{~kwd1}
+  \keyword{~kwd2}
+
+Auto-generated content requiring editing in Rd object 'convert_new_msd_HITS':
+  \keyword{~kwd1}
+  \keyword{~kwd2}
+
+Auto-generated content requiring editing in Rd object 'read_new_msd':
+  \keyword{~kwd1}
+  \keyword{~kwd2}
+
+* checking for unstated dependencies in examples ... WARNING
+'::' or ':::' imports not declared from:
+  'data.table' 'dplyr' 'stringr' 'tibble'
+* checking examples ... OK
+* DONE
+Status: 6 WARNINGs, 2 NOTEs
