@@ -6,7 +6,7 @@ library(readxl)
 library(openxlsx)
 library(tidyverse)
 
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 umb_linelist <- read_excel(file.choose(), 
                            col_types = c("date", #DATA_PULL
                                          "text", #NDR_PID
@@ -121,10 +121,14 @@ wrangle_partner <- function(partner, period, ndr){
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------     MAIN    ------------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 setwd("~/Randy Codebase/R/Nigeria_PT_Retention")
 
 partner <- "IHVN"
 period <- "LTFU Tracking_Q3 FY20"
+date <- format(Sys.Date(), format =  "%Y_%m_%d")
+getOption("openxlsx.dateFormat", "mm/dd/yyyy")
 
 df <- wrangle_partner(partner, period, umb_linelist)
 list_of_states <- list()
@@ -138,17 +142,12 @@ for(state in unique(df$STATE)){
   list_of_states[[state]] <- assign(state, df2)
 }
 
+do{
 wb <- loadWorkbook(file = "LTFU_template.xlsx")
-
-date <- format(Sys.Date(), format =  "%Y_%m_%d")
-getOption("openxlsx.dateFormat", "mm/dd/yyyy")
-
-names(wb)  #list worksheets
-
-#data_entry_instructions <- read.
+#names(wb)
 
 for(counter in unique(df$STATE)){
-  addWorksheet(wb, counter)
+  addWorksheet(wb, counter, tabColour = "red")
   writeDataTable(wb, 
                  counter, 
                  list_of_states[[counter]],
@@ -160,32 +159,63 @@ for(counter in unique(df$STATE)){
   setColWidths(wb, counter, cols = 1:40, widths = "auto")
   
   # Create Instruction Titles
-  writeData(wb, counter, "Instructions: Please complete the cells in columns \"Y\" through \"AG\"")
-  title_style <- createStyle(fontSize = 24, fontColour = "white", bgFill = "#222B35")
-  entry_style <- createStyle(fontSize = 24)
+  writeData(wb, counter, "Instructions: Please complete the cells in columns \"Y\" through \"AG\"",
+            startCol = 1, startRow = 1)
+  writeData(wb, counter, "Please fill in these columns for each inactive patient.",
+            startCol = 25, startRow = 1)
+  writeData(wb, counter, "Select reason to indicate why patient confirmed on ART is inactive in NDR",
+            startCol = 25, startRow = 2)
+  writeData(wb, counter, "Select option to indicate if the patient was tracked Note: For patients found LOST_IN_TX, select NA",
+            startCol = 26, startRow = 2)
+  writeData(wb, counter, "Select option to indicate if tracked patient was successfully reached Note: For patients found LOST_IN_TX, select NA",
+            startCol = 27, startRow = 2)
+  writeData(wb, counter, "Add date patient refused to return, otherwise leave blank(MM/DD/YYYY)",
+            startCol = 28, startRow = 2)
+  writeData(wb, counter, "Add date patient picked up drugs, otherwise leave blank(MM/DD/YYYY)",
+            startCol = 29, startRow = 2)
+  writeData(wb, counter, "Add date of death, otherwise leave blank(MM/DD/YYYY)",
+            startCol = 30, startRow = 2)
+  writeData(wb, counter, "Add date of transfer out, otherwise leave blank (MM/DD/YYYY)",
+            startCol = 31, startRow = 2)
+  writeData(wb, counter, "Select option to indicate why patient could not be reached",
+            startCol = 32, startRow = 2)
+  writeData(wb, counter, "Provide details if the response to LOST_IN_TX or NOT_REACHED_REASON was OTHER",
+            startCol = 33, startRow = 2)
+
+  # Instruction Formatting
+  title_style <- createStyle(fontSize = 24, fontColour = "white", fgFill = "#222B35", valign = "center")
+  entry_style_h <- createStyle(fontSize = 16, fontColour = "white", fgFill = "#222B35", valign = "center", halign = "center")
+  entry_style <- createStyle(fontSize = 12, fontColour = "white", fgFill = "#0D5279", valign = "center", halign = "center", wrapText = T)
+  
   addStyle(wb, counter, title_style, rows = 1, cols = 1)
+  addStyle(wb, counter, entry_style_h, rows = 1, cols = 25)
+  addStyle(wb, counter, entry_style, rows = 2, cols = 25:33)
+  
+  # Merge Title Cells
   mergeCells(wb, counter, cols = 1:24, rows = 1:2)
+  mergeCells(wb, counter, cols = 25:33, rows = 1)
+  
+  setRowHeights(wb, counter, rows = 2, heights = 90)
   
   # Apply Data Validation
-  dataValidation(wb, counter, col = 25, rows = 4:nrow(df) + 5, type = "list", value = "'dropdown list'!$G$7:$G$10") #LOST_IN_TX (Y)
-  dataValidation(wb, counter, col = 26, rows = 4:nrow(df) + 5, type = "list", value = "'dropdown list'!$J$7:$J$8") #TRACKING_ATTEMPTED (Y)
-  dataValidation(wb, counter, col = 27, rows = 4:nrow(df) + 5, type = "list", value = "'dropdown list'!$K$7:$K$8") #REACHED(Y)
-  dataValidation(wb, counter, col = 32, rows = 4:nrow(df) + 5, type = "list", value = "'dropdown list'!$L$7:$L$9") #NOT_REACHED_REASON (Y)
+  dataValidation(wb, counter, col = 25, rows = 4:(nrow(list_of_states[[counter]]) + 5), type = "list", value = "'dropdown list'!$G$7:$G$10") #LOST_IN_TX (Y)
+  dataValidation(wb, counter, col = 26, rows = 4:(nrow(list_of_states[[counter]]) + 5), type = "list", value = "'dropdown list'!$J$7:$J$8") #TRACKING_ATTEMPTED (Y)
+  dataValidation(wb, counter, col = 27, rows = 4:(nrow(list_of_states[[counter]]) + 5), type = "list", value = "'dropdown list'!$K$7:$K$8") #REACHED(Y)
+  dataValidation(wb, counter, col = 32, rows = 4:(nrow(list_of_states[[counter]]) + 5), type = "list", value = "'dropdown list'!$L$7:$L$9") #NOT_REACHED_REASON (Y)
 
   # Style Date Columns
-  addStyle(wb, counter, style = createStyle(numFmt = "DATE"), rows = 4:nrow(df) + 5, cols = c(1,14,16,18,21,23,24,28,29,30,31), gridExpand = TRUE)
-  setColWidths(wb, counter, cols = c(1,14,16,18,21,23,24,28,29,30,31), widths = 15)
+  addStyle(wb, counter, style = createStyle(numFmt = "DATE"), rows = 4:(nrow(list_of_states[[counter]]) + 5), cols = c(1,14,16,18,21,23,24,28,29,30,31), gridExpand = TRUE)
+  setColWidths(wb, counter, cols = c(1,14,16,18,21,23:33), widths = 15)
 }
 
-addWorksheet(wb, "All_States")
-writeDataTable(wb, 
-               "All_States", 
-               df,
-               tableStyle = "TableStyleMedium4",
-               tableName = "All_States")
+# addWorksheet(wb, "All_States")
+# writeDataTable(wb, 
+#                "All_States", 
+#                df,
+#                tableStyle = "TableStyleMedium4",
+#                tableName = "All_States")
 
 
 names(wb)
 
-## Save workbook
 saveWorkbook(wb, paste(partner, "_LTFUTrackingTool_", date, ".xlsx", sep = ""), overwrite = TRUE)
