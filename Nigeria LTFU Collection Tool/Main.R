@@ -119,36 +119,3 @@ df_final %>%
 
 
 
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-######################## 1) Stage 1 Determination ######################## 
-## a) Import Prev_LTFU Dataset 
-# (from Folder Continue_LTFU > Stage2)
-df <- ndr_read("./Continue_LTFU/Stage2/Continue_LTFU_stage2_2020_07_10.xlsx")
-
-## b) Archive LTFU's > 6months 
-# (into Folder Historical_LTFU > Stage1)
-stage1archive(df)
-
-## c) Export LTFU's for UMB to Update 
-# (into Folder Continue_LTFU > Stage1_ForUMBUpdate)
-stage1continue(df)
-
-## aa) Deduplication for UMB Update 
-# (into Folder Continue_LTFU > Stage1_ForUMBUpdate)
-df2 <- df %>%
-  group_by_at(vars(-NDR_PID)) %>%
-  arrange(INACTIVE_DATE) %>%
-  slice(1L) %>%
-  ungroup()
-
-dupe_df <- df %>% 
-  group_by_at(vars(-NDR_PID)) %>% 
-  filter(n()>1)
-
-write.xlsx(df2, paste("./Continue_LTFU/Stage1_ForUMBUpdate/Continue_LTFU_stage1_", date, ".xlsx", sep = ""), asTable = TRUE)
-
-## TODO: Retire Stage 1, roll >6 months criteria to Stage 2
-
-
-
