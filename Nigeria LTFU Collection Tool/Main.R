@@ -1,6 +1,6 @@
 #### Nigeria LTFU Partner Collection Tool Generation
 #### AUTHOR: Randy Yee (PCX5@cdc.gov)
-#### CREATION DATE: 4/29/2019
+#### CREATION DATE: 9/24/2020
 
 library(readxl)
 library(openxlsx)
@@ -17,19 +17,19 @@ data_pull_date <- "2020-10-08" # Current Data_Pull Date
 
 ######################## 1) Archive/Continue Determination ######################## 
 ## a) Import New LTFU's & Updated LTFU's and Append
-df_final <- ndr_wrangle("./UMB/NEWLTFU_08092020_UMB.xlsx", # New LTFU File
+df_ndr <- ndr_wrangle("./UMB/NEWLTFU_08092020_UMB.xlsx", # New LTFU File
                         "./UMB/Continue_LTFU_2020_08_10_UMB.xlsx", # Updated LTFU File
                         data_pull_date
                         )
 
 # Any dupes
-dupe_df <- df_final %>% 
+df_dupe <- df_ndr %>% 
   group_by(SITE_PID,FACILITY_UID) %>% 
   filter(n()>1) %>%
   ungroup()
 
 # Same Inactive Dates
-dupe_dfb <- df_final %>% 
+df_dupedate <- df_ndr %>% 
   group_by(SITE_PID,FACILITY_UID,INACTIVE_DATE) %>% 
   filter(n()>1)
 
@@ -38,7 +38,7 @@ dupe_dfb <- df_final %>%
 # (into Folder Historical_LTFU > Stage2)
 ## c) Archive Final Dataset for Next Update (Most recent inactive date taken)
 # (into Folder Continue_LTFU)
-df_final2 <- continue_determine(df_final)
+df_clean_ndr <- continue_determine(df_ndr)
 
 
 ## d) Import Partner Current Submissions
@@ -47,75 +47,20 @@ df_partner <- import_partnersubmissions()
 
   
 ## e) Merge Partner Entry to NDR
-df_final3 <- merge_ndrdf_partnersub(df_final2, df_partner)
+df_merged <- merge_ndrdf_partnersub(df_clean_ndr, df_partner)
 
-dupe_df3 <- df_final3 %>% 
+df_dupe2 <- df_merged %>% 
   group_by(SITE_PID,FACILITY_UID) %>% 
   filter(n()>1)
 
-## In case, partner submission tools are duplicating linelist (df_final3 > df_final2)
-test <- df_final3 %>%
+## In case, partner submission tools are duplicating linelist (df_merged > df_clean_ndr)
+df_final <- df_merged %>%
   group_by(SITE_PID, FACILITY_UID) %>%
   arrange(desc(INACTIVE_DATE), .by_group = TRUE ) %>%
   slice(1L) %>%
   ungroup()
-
-test99 <- df_final3 %>%
-  group_by(SITE_PID, FACILITY_UID) %>%
-  arrange(desc(INACTIVE_DATE)) %>%
-  slice(1L) %>%
-  ungroup()
-
-compare_df(test,test99)
-
-## Other Duplication Tests
-test2 <- df_final3 %>% group_by(SITE_PID, IMPLEMENTING_PARTNER, STATE, FACILITY_UID) %>% summarise(n()>1) %>% filter(`n() > 1` == T)
-test3 <- df_final3 %>% group_by(SITE_PID) %>% summarise(n()>1) %>% filter(`n() > 1` == T)
-
-
-testa <- df_final2 %>%
-  group_by(SITE_PID, FACILITY_UID) %>%
-  arrange(desc(INACTIVE_DATE), .by_group = TRUE) %>%
-  slice(1L) %>%
-  ungroup()
-test2a <- df_final2 %>% group_by(SITE_PID, FACILITY_UID) %>% summarise(n()>1) %>% filter(`n() > 1` == T)
-test3a<- df_final2 %>% group_by(SITE_PID) %>% summarise(n()>1) %>% filter(`n() > 1` == T)
-
 
 ######################## 2) Generate Partner Tools ########################
 ## a) Create Partner Tools
 # (into Folder New Tools)
-generatetools(test)
-
-
-test %>% group_by(IMPLEMENTING_PARTNER,STATE)%>% summarise(n=n())
-
-
-
-df_final %>% 
-  filter(RETURN_VALIDATE == "Yes" & INACTIVE_TIME == "> 6 months") %>% 
-  group_by(SITE_PID, FACILITY_UID) %>%
-  arrange(desc(INACTIVE_DATE), .by_group = TRUE ) %>%
-  slice(1L) %>%
-  ungroup() %>% 
-  group_by(IMPLEMENTING_PARTNER,STATE) %>% 
-  summarise(n=n()) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+generatetools(df_final)
