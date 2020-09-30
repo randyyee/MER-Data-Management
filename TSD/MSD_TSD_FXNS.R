@@ -25,13 +25,14 @@ msd_import <- function(msd_txt){
                                     ) 
                    ) %>%
     
-    filter(indicator %in% c("HTS_TST_POS", 
-                            "HTS_TST",
-                            "TX_CURR",
-                            "TX_ML",
-                            "TX_RTT",
-                            "TX_NEW", 
-                            "TX_PVLS"))
+    filter(indicator %in% c(#"HTS_TST_POS"#, #a1
+                            #"HTS_TST"#, #a2
+                            "TX_CURR", #b #qtr
+                            "TX_ML", #b #qtr
+                            "TX_RTT", #b #qtr
+                            "TX_NEW"#, #b #qtr
+                            #"TX_PVLS" #b
+                            ))
 }
 
 
@@ -59,7 +60,7 @@ recode_period_txdisagg <- function(msd_converted_long, prev_r, curr_r, curr_t){
                               period == curr_t ~ "curr_target",
                               TRUE ~"remove")) %>%
     mutate(indicator = ifelse(indicator == "TX_ML",
-                              paste(indicator, standardizeddisaggregate,sep="_"),
+                              paste(indicator, otherdisaggregate, sep="_"),
                               indicator)) %>%
     filter(period != "remove") %>%
     group_by_if(is.character) %>% 
@@ -219,24 +220,149 @@ tsd_convert_wide <- function(tsd_cleaned){
     select(-SUMCOL)
 }
 
+## ==================== TSD DUMMY COLUMNS ====================
+tsd_dummies <- function(tsd_converted_wide){
+  df <- tsd_converted_wide %>%
+    mutate(datatype	= "",
+           ApprovalLevel = "",
+           TX_CURR_NAT = "",
+           TX_CURR_SUBNAT	= "",
+           PLHIV = "",
+           TX_RET_Now_N = "",	
+           TX_RET_Now_D = ""
+    )
+  
+  df2 <- data.frame(matrix(vector(),ncol=50))
+  
+  colnames(df2) <- c("operatingunit",	
+                  "countryname",	
+                  "snu1",	
+                  "snuprioritization",	
+                  "psnu",	
+                  "psnuuid",	
+                  "sitetype",	
+                  "sitename",	
+                  "orgunituid",	
+                  "fundingagency",	
+                  "primepartner",	
+                  "mech_name",	
+                  "mech_code",	
+                  "facilityprioritization",	
+                  "F_C",	
+                  "age",	
+                  "sex",	
+                  "datatype",	
+                  "ApprovalLevel",	
+                  "TX_CURR_NAT",	
+                  "TX_CURR_SUBNAT",	
+                  "PLHIV",	
+                  "TX_CURR_Prev_R",	
+                  "TX_CURR_Now_R",	
+                  "TX_CURR_Now_T",	
+                  "HTS_TST_POS_Now_R",	
+                  "HTS_TST_POS_Now_T",	
+                  "TX_NEW_Now_R",	
+                  "TX_NEW_Now_T",	
+                  "TX_RET_Now_N",	
+                  "TX_RET_Now_D",	
+                  "HTS_TST_Now_T",	
+                  "HTS_TST_Now_R",	
+                  "TX_PVLS_Now_D",	
+                  "TX_PVLS_Now_N",	
+                  "HTS_TST_POS_Prev_R",	
+                  "HTS_TST_Prev_R",	
+                  "TX_NEW_Prev_R",	
+                  "TX_ML_No Contact Outcome - Lost to Follow-Up 3+ Months Treatment_Now_R",
+                  "TX_ML_No Contact Outcome - Lost to Follow-Up 3+ Months Treatment_Now_T",	
+                  "TX_ML_No Contact Outcome - Lost to Follow-Up <3 Months Treatment_Now_R",	
+                  "TX_ML_No Contact Outcome - Lost to Follow-Up <3 Months Treatment_Now_T",	
+                  "TX_ML_No Contact Outcome - Transferred Out_Now_R",	
+                  "TX_ML_No Contact Outcome - Transferred Out_Now_T",	
+                  "TX_RTT_Now_R",	
+                  "TX_RTT_Now_T",	
+                  "TX_ML_No Contact Outcome - Died_Now_R",	
+                  "TX_ML_No Contact Outcome - Died_Now_T",	
+                  "TX_ML_No Contact Outcome - Refused Stopped Treatment_Now_R",	
+                  "TX_ML_No Contact Outcome - Refused Stopped Treatment_Now_T")
+  
+  df3 <- bind_rows(df2, df)
+  
+  df4 <- df3 %>%
+    select("OperatingUnit" = "operatingunit",	
+           "CountryName" = "countryname",	
+           "SNU1" = "snu1",	
+           "CurrentSNUPrioritization" = "snuprioritization",	
+           "PSNU" = "psnu",	
+           "PSNUuid" = "psnuuid",	
+           "site_type" = "sitetype",	
+           "site_name" = "sitename",	
+           "orgUnitUID" = "orgunituid",	
+           "FundingAgency" = "fundingagency",	
+           "PrimePartner" = "primepartner",	
+           "ImplementingMechanismName" = "mech_name",	
+           "MechanismID" = "mech_code",	
+           "FacilityPrioritization" = "facilityprioritization",	
+           "F_C",	
+           "Age" = "age",	
+           "Sex" = "sex",	
+           "datatype",	
+           "ApprovalLevel",	
+           "TX_CURR_NAT",	
+           "TX_CURR_SUBNAT",	
+           "PLHIV",	
+           "TX_CURR_Prev_R",	
+           "TX_CURR_Now_R",	
+           "TX_CURR_Now_T",	
+           "HTS_TST_POS_Now_R",	
+           "HTS_TST_POS_Now_T",	
+           "TX_NEW_Now_R",	
+           "TX_NEW_Now_T",	
+           "TX_RET_Now_N",	
+           "TX_RET_Now_D",	
+           "HTS_TST_Now_T",	
+           "HTS_TST_Now_R",	
+           "TX_PVLS_Now_D",	
+           "TX_PVLS_Now_N",	
+           "HTS_TST_POS_Prev_R",	
+           "HTS_TST_Prev_R",	
+           "TX_NEW_Prev_R",	
+           "TX_ML_No Contact Outcome - Lost to Follow-Up 3+ Months Treatment_Now_R",
+           "TX_ML_No Contact Outcome - Lost to Follow-Up 3+ Months Treatment_Now_T",	
+           "TX_ML_No Contact Outcome - Lost to Follow-Up <3 Months Treatment_Now_R",	
+           "TX_ML_No Contact Outcome - Lost to Follow-Up <3 Months Treatment_Now_T",	
+           "TX_ML_No Contact Outcome - Transferred Out_Now_R",	
+           "TX_ML_No Contact Outcome - Transferred Out_Now_T",	
+           "TX_RTT_Now_R",	
+           "TX_RTT_Now_T",	
+           "TX_ML_No Contact Outcome - Died_Now_R",	
+           "TX_ML_No Contact Outcome - Died_Now_T",	
+           "TX_ML_No Contact Outcome - Refused Stopped Treatment_Now_R",	
+           "TX_ML_No Contact Outcome - Refused Stopped Treatment_Now_T"
+    )
+}
 
 ## ==================== COMPOSED FUNCTION ====================
 tsd_generate <- function(msd_txt, prevR, currR, currT){
   df <- msd_import(msd_txt)
   
-  df1 <- msd_convert_long(df)
+  df <- msd_convert_long(df)
   
-  df2 <- recode_period_txdisagg(df1, prevR, currR, currT)
+  df <- recode_period_txdisagg(df, prevR, currR, currT)
   
-  df3 <- recode_prioritizations(df2)
+  df <- recode_prioritizations(df)
   
-  df4 <- collapse_age(df3)
+  df <- collapse_age(df)
   
-  df5 <- reformat_age_sex(df4)
+  df <- reformat_age_sex(df)
   
-  df6 <- redo_indicator_name(df5)
+  df <- redo_indicator_name(df)
   
-  df7 <- tsd_clean(df6)
+  df <- tsd_clean(df)
   
-  df8 <- tsd_convert_wide(df7)
+  df <- tsd_convert_wide(df)
+  
+  df <- tsd_dummies(df)
 }
+
+
+## ==================== EXPORT FUNCTION ====================
