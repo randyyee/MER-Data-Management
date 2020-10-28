@@ -1,0 +1,290 @@
+---
+title: "API Test"
+author: "Randy Yee (pcx5@cdc.gov)"
+date: "October 27, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+```
+
+## Get saved account parameters.
+
+Create a json file in folder secrets of your working directory.
+
+```{r}
+secrets <- read_json("./secrets/datim.json")
+user <- secrets$dhis$username
+password <- secrets$dhis$password
+```
+
+## URL parts
+
+```{r}
+base_url <- "https://www.datim.org/api/29"
+analytics_url <- "https://www.datim.org/api/analytics?"
+analytics_dx <- "dimension=dx:"
+analytics_pe <- "dimension=pe:"
+analytics_co <- "dimension=co"
+```
+
+
+## Test API connection
+
+```{r}
+httr::set_config(httr::config(http_version=0))
+
+res <- httr::GET(base_url,
+           authenticate(user,password),
+           timeout(60))
+
+res$status_code == 200 # 200 TRUE, request fulfilled
+
+# Status Codes
+#Informational responses (100-199),
+#Successful responses (200-299),
+#Redirects (300-399),
+#Client errors (400-499),
+#and Server errors (500-599)
+
+api_info <- jsonlite::fromJSON(httr::content(res, as="text"))
+api_info <- as.data.frame(api_info$resources)
+api_info
+```
+
+## Basic data call test
+dimension=dx: (data)
+dimension=pe: (period)
+
+Example of API url:
+https://www.datim.org/api/analytics?dimension=dx:owIr2CJUbwq&dimension=pe:QUARTERS_THIS_YEAR&filter=ou:ybg3MO3hcf4
+
+https://www.datim.org/api/analytics?dimension=dx:Hyvw9VnZ2ch;ebCEt4u78PX&dimension=pe:LAST_12_MONTHS;LAST_FINANCIAL_YEAR&filter=ou:XOivy2uDpMF&displayProperty=SHORTNAME&skipMeta=true&includeNumDen=true
+
+Note: filter for one OU using the UID
+
+dimensions: dx > pe > co > ou
+
+```{r}
+test <- GET("https://www.datim.org/api/29/analytics?dimension=dx:c03urRVExYe;qkjYvdfOakY;ebCEt4u78PX;Hyvw9VnZ2ch&dimension=pe:LAST_4_QUARTERS&filter=ou:ybg3MO3hcf4&displayProperty=SHORTNAME&skipMeta=true&includeNumDen=true", # dimensions: dx - dataelement codes, pe - periods; sep by ";" within dimensions and "&" between dimensions
+            authenticate(user,password),
+            timeout(60))
+
+test$status_code == 200
+
+data <- fromJSON(rawToChar(test$content))
+names(data)
+data$headers
+data$metaData
+data$rows
+
+df <- as.data.frame(data$rows) # Values are in rows
+colnames(df) <- data$headers$column # Column names contained here
+df$Value <- as.numeric(as.character(df$Value)) # Change value to numeric
+
+df
+```
+
+=================================================================
+## Build master metadataset for API calls and data formatting
+All metadata codes are public.
+
+Example code dataset URL:
+https://www.datim.org/api/sqlViews/DotdxKrNZxG/data.json?var=dataSets:jKdHXpBfWop
+
+Note: this JSON output is just one of 95 pages (pagecount)!
+
+```{r}
+dataset_codes <- GET("https://www.datim.org/api/dataSets")
+dataset_codes <- jsonlite::fromJSON(rawToChar(dataset_codes$content))
+
+master_meta <- data.frame()
+for (code in dataset_codes$dataSets$id){
+  url_dataset <- paste0("https://www.datim.org/api/sqlViews/DotdxKrNZxG/data.json?var=dataSets:", code)
+  dataset_container <- GET(url_dataset)
+  dataset_container <- jsonlite::fromJSON(rawToChar(dataset_container$content))
+  
+  is.null(dataset_container$pager$pageCount) # Check if there are additional pages
+  # TODO: finish this case
+  
+  #Create a DF with the metadata
+  if(length(dataset_container$listGrid$rows)!=0){
+    dataset_container2 <- as.data.frame(dataset_container$listGrid$rows)
+    colnames(dataset_container2) <- dataset_container$listGrid$headers$column
+    
+    #Append metadatasets
+    master_meta <- bind_rows(master_meta, dataset_container2)
+  }
+}
+master_meta
+```
+
+## How to specify results, targets, and narratives using data element groups
+
+# 1) Start with dataset id
+
+```{r}
+result_targets_codes <- jsonlite::fromJSON(rawToChar(GET("https://www.datim.org/api/dataElementGroups")$content))
+result_targets_codes <- as.data.frame(result_targets_codes$dataElementGroups)
+result_targets_codes <- result_targets_codes %>% 
+  filter(str_detect(displayName, "Results|Targets|Narratives")) %>%
+  filter(str_detect(displayName, "2018|2019|2020"))
+result_targets_codes
+```
+
+# 2) Use dataset id to get dataelements
+
+```{r}
+# Select dataset type id from above
+dx_string <- result_targets_codes[result_targets_codes$displayName=="2020 MER Results",1]
+
+dataelementgroup_url <- paste0("https://www.datim.org/api/dataElementGroups/",dx_string)
+dataelementgroup <- GET(dataelementgroup_url,
+    authenticate(user,password),
+    timeout(60))
+dataelementgroup <- jsonlite::fromJSON(rawToChar(dataelementgroup$content))
+dataelementgroup_df <- as.data.frame(dataelementgroup$dataElements)
+is.null(dataelementgroup$pager$pageCount) # Check if there are additional pages
+dataelementgroup_df
+
+# Get dataelements to map names to groups
+dataelement_url <- "https://www.datim.org/api/dataElements/"
+dataelement <- GET(dataelement_url,
+    authenticate(user,password),
+    timeout(60))
+dataelement <- jsonlite::fromJSON(rawToChar(dataelement$content))
+dataelement_df <- as.data.frame(dataelement$dataElements)
+is.null(dataelement$pager$pageCount) # Check if there are additional pages
+
+# Use a loop to call other pages
+for (i in 2:dataelement$pager$pageCount){
+  new_url <- paste0(str_sub(dataelement_url, end=-1),"?page=",i)
+  dataelement2 <- GET(new_url,
+    authenticate(user,password),
+    timeout(60))
+  dataelement2 <- jsonlite::fromJSON(rawToChar(dataelement2$content))
+  dataelement_df2 <- as.data.frame(dataelement2$dataElements)
+  dataelement_df <- bind_rows(dataelement_df,dataelement_df2)
+}
+dataelement_df
+
+map_dataelement <- left_join(dataelementgroup_df,dataelement_df, by = "id")
+map_dataelement
+```
+
+## Reference geographic codes from OU to site
+
+```{r}
+# Get orgunits to map names to groups
+orgunit_url <- "https://www.datim.org/api/organisationUnits/"
+orgunit <- GET(orgunit_url,
+    authenticate(user,password),
+    timeout(60))
+orgunit <- jsonlite::fromJSON(rawToChar(orgunit$content))
+orgunit_df <- as.data.frame(orgunit$organisationUnits)
+is.null(orgunit$pager$pageCount) # Check if there are additional pages
+
+# Use a loop to call other pages
+for (i in 2:orgunit$pager$pageCount){
+  new_url <- paste0(str_sub(orgunit_url, end=-1),"?page=",i)
+  orgunit2 <- GET(new_url,
+    authenticate(user,password),
+    timeout(60))
+  orgunit2 <- jsonlite::fromJSON(rawToChar(orgunit2$content))
+  orgunit_df2 <- as.data.frame(orgunit2$organisationUnits)
+  orgunit_df <- bind_rows(orgunit_df,orgunit_df2)
+}
+head(orgunit_df)
+```
+
+## Generic function for returning codesets
+
+```{r}
+getCodeDataset <- function(code){
+  
+  getcode_url <- paste0(base_url,"/",code,"?paging=FALSE")
+  coded <- GET(getcode_url,
+               authenticate(user,password),
+               timeout(60))
+  coded <- jsonlite::fromJSON(rawToChar(coded$content))
+  coded_df <- as.data.frame(coded[[code]])
+  names(coded_df)[names(coded_df) == 'displayName'] <- eval(code)
+  return(coded_df)
+  
+  # if(is.null(coded$pager$pageCount)){ # Check if there are additional pages
+  #   return(coded_df)
+  # } else {
+  #   # Use a loop to call other pages
+  #   for (i in 2:coded$pager$pageCount){
+  #     new_url <- paste0(str_sub(getcode_url, end=-1),"?page=",i)
+  #     coded2 <- GET(new_url,
+  #                   authenticate(user,password),
+  #                   timeout(60))
+  #     coded2 <- jsonlite::fromJSON(rawToChar(coded2$content))
+  #     coded_df2 <- as.data.frame(coded2[[code]])
+  #     coded_df <- bind_rows(coded_df,coded_df2)
+  #   }
+  #   return(coded_df)
+  # }
+}
+
+getCodeDataset("dataSets")
+getCodeDataset("organisationUnitGroups")
+getCodeDataset("organisationUnitGroupSets")
+getCodeDataset("organisationUnitLevels")
+```
+
+=====================================================================================
+## Start building the URL
+## BaseURL + dx dimension + pe dimension + co (category option combos) + ou + etc
+
+Example for returning TX_CURR results for Moz and facilities for the past 4 quarters.
+
+dimension dx: all TX_CURR dataelements
+dimension pe: last 4 quarters
+dimension co: include category option combos
+dimension ou: for Moz and facilities
+Note: (replacing dimension) filter=ou will not give you a by ou output
+
+```{r}
+pivot_url <- "https://www.datim.org/api/29/analytics?dimension=dx:c03urRVExYe;qkjYvdfOakY;ebCEt4u78PX;Hyvw9VnZ2ch&dimension=pe:LAST_4_QUARTERS&dimension=co&dimension=ou:h11OyvlPxpJ;OU_GROUP-POHZmzofoVx&displayProperty=NAME"
+
+# See getCodeDataset("organisationUnitGroups")
+# OU_GROUP-POHZmzofoVx is facility
+# OU_GROUP-PvuaP6YALSA is 
+# OU_GROUP-nwQbMeALRjL is
+
+test <- GET(pivot_url,
+            authenticate(user,password),
+            timeout(600))
+
+test$status_code == 200
+
+data <- fromJSON(rawToChar(test$content))
+names(data)
+data$headers
+data$metaData
+data$rows
+data$metaData$dimensions
+data$metaData$items
+
+decoder <- rownames_to_column(do.call(bind_rows, lapply(data$metaData$items, data.frame)), var = "id")
+
+df <- as.data.frame(data$rows) # Values are in rows
+colnames(df) <- data$headers$column # Column names contained here
+df$Value <- as.numeric(as.character(df$Value)) # Change value to numeric
+
+decoded_df <- df %>% 
+  left_join(getCodeDataset("dataElements"), 
+            by = c("Data" = "id")) %>%
+  left_join(getCodeDataset("categoryOptionCombos"), 
+            by = c("Category option combo" = "id")) %>%
+  left_join(getCodeDataset("organisationUnits"), 
+            by = c("Organisation unit" = "id"))
+  
+decoded_df
+```
+
