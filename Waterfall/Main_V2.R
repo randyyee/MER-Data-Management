@@ -32,21 +32,21 @@ for (ou in ou_list) {
                      "2020_qtr3",
                      "2020_targets")
   df2 <- txs_adj_generate(ou,
-                     "2020_qtr2",
                      "2020_qtr3",
+                     "2020_qtr4",
                      "2020_targets")
   
   big_ou <- bind_rows(list(big_ou, 
                            df, 
-                           df1 %>% select(-TX_CURR_Now_T), 
-                           df2 %>% select(-TX_CURR_Now_T)))
+                           df1, 
+                           df2))
   rm(df)
   rm(df1)
   rm(df2)
   gc()
 }
 
-openxlsx::write.xlsx(big_ou, file=paste("C:/Users/pcx5/OneDrive - CDC/TSD/Waterfall_ADJ", period,".xlsx", sep = ""), 
+openxlsx::write.xlsx(big_ou, file=paste("C:/Users/pcx5/OneDrive - CDC/TSD/Waterfall_ADJ_", period,".xlsx", sep = ""), 
                      keepNA = FALSE, asTable = TRUE)
 
 
