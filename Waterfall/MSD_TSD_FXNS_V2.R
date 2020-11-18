@@ -28,13 +28,10 @@ msd_import <- function(msd_txt){
                                     ) 
                    ) %>%
     
-    filter(indicator %in% c(#"HTS_TST_POS", #a1
-                            #"HTS_TST", #a2
-                            "TX_CURR", #b #qtr
-                            "TX_ML", #b #qtr
-                            "TX_RTT", #b #qtr
-                            "TX_NEW"#, #b #qtr
-                            #"TX_PVLS" #b
+    filter(indicator %in% c("TX_CURR",
+                            "TX_ML",
+                            "TX_RTT",
+                            "TX_NEW"
                             ))
 }
 
