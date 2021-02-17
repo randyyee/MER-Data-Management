@@ -31,7 +31,7 @@ for (ou in ou_list) {
   gc()
 }
 
-
+## ==================== ADD-ON ALL OU ====================
 setwd("C:/Users/pcx5/OneDrive - CDC/TSD")
 append_list <- list.files(pattern = ".*.xlsx")
 big_ou <- data.frame()
