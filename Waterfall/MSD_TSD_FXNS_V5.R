@@ -92,8 +92,8 @@ recode_prioritizations <- function(recoded_period_txdisagg){
 collapse_age <- function(recoded_prioritizations){
   
   df <- recoded_prioritizations %>%
-    select(-ageasentered) %>%
-    pivot_longer(cols=c("trendsfine", "trendssemifine", "trendscoarse"), 
+    select(-c(ageasentered, trendssemifine)) %>%
+    pivot_longer(cols=c("trendsfine", "trendscoarse"), 
                  names_to = "age_type", 
                  values_to = "age") %>%
     filter(!is.na(value))
@@ -144,6 +144,7 @@ txs_clean <- function(redone_indicator_name){
            mech_code,
            facility,
            facilityprioritization,
+           indicatortype,
            age_type,
            age,
            sex,
@@ -168,52 +169,23 @@ txs_convert_wide <- function(txs_cleaned){
   df <- df %>%
     rename(period = period_range) %>%
     filter(SUMCOL != 0) %>%
-    select(-SUMCOL) %>%
-    select_if(names(.) %in% c("operatingunit",
-                              "countryname",
-                              "snu1",
-                              "snuprioritization",
-                              "psnu",
-                              "psnuuid",
-                              "sitetype",
-                              "sitename",
-                              "orgunituid",
-                              "fundingagency",
-                              "primepartner",
-                              "mech_name",
-                              "mech_code",
-                              "facility",
-                              "facilityprioritization",
-                              "age_type",
-                              "age",
-                              "sex",
-                              "period",
-                              #"period_range",
-
-                              "TX_CURR_Prev_R",
-                              "TX_CURR_Now_R",
-                              "TX_CURR_Now_T",
-
-                              "TX_NEW_Prev_R",
-                              "TX_NEW_Now_R",
-
-                              "TX_RTT_Now_R",
-                              "TX_ML_No Contact Outcome - Transferred Out_Now_R",
-                              "TX_ML_No Contact Outcome - Interruption in Treatment <3 Months Treatment_Now_R",
-                              "TX_ML_No Contact Outcome - Interruption in Treatment 3+ Months Treatment_Now_R",
-                              "TX_ML_No Contact Outcome - Refused Stopped Treatment_Now_R",
-                              "TX_ML_No Contact Outcome - Died_Now_R"
-    ))
+    select(-SUMCOL)
 
 }
 
 ## ==================== COMPOSED FUNCTION ====================
-txs_generate <- function(msd_txt, prevR, currR, currT){
+msd_df <- function(msd_txt){
+  
   df <- msd_import(msd_txt)
   
   df <- msd_convert_long(df)
   
-  df <- recode_period_txdisagg(df, prevR, currR, currT)
+}
+
+
+txs_generate <- function(msd_df, prevR, currR, currT){
+  
+  df <- recode_period_txdisagg(msd_df, prevR, currR, currT)
   
   df <- recode_prioritizations(df)
   
@@ -459,9 +431,10 @@ txs_w_netnewadj <- function(txs_df, netnew_df){
 }
 
 ## ==================== COMPOSED FUNCTION 2 ====================
-txs_adj_generate <- function(msd_txt, prevR, currR, currT){
-  df_txs <- txs_generate(msd_txt, prevR, currR, currT)
-  df_tnna <- tx_net_new_adj(msd_convert_long(msd_import(msd_txt)))
+txs_adj_generate <- function(msd_df, prevR, currR, currT){
+  df_txs <- txs_generate(msd_df, prevR, currR, currT)
+  #df_tnna <- tx_net_new_adj(msd_convert_long(msd_import(msd_txt)))
+  df_tnna <- tx_net_new_adj(msd_df)
   
   df <- txs_w_netnewadj(df_txs, df_tnna)
   
