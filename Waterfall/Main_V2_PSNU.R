@@ -4,7 +4,7 @@
 ## DESCRIPTION: 
 ##      TSD Refactor from Imran Mujawar (CDC)'s original script
 ## CREATION DATE: 4/30/2021
-## UPDATE: 
+## UPDATE: For Global - all OU PSNUxIM
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 library(tidyverse)
@@ -13,8 +13,8 @@ library(openxlsx)
 source("~/Randy Codebase/R/TSD/MSD_TSD_FXNS_V5_PSNU.R")
 
 ## ==================== MAIN ====================
-setwd("C:/Users/pcx5/Downloads/MER_Structured_Datasets_PSNU_IM_FY19-21_20210319_v2_1") # Folder 
-period <- "CleanQ1"
+setwd("C:/Users/pcx5/Downloads/MER_Structured_Datasets_PSNU_IM_FY19-21_20210514_v1_1") # Folder 
+period <- "FY21PreQ2"
 ou_list <- list.files(pattern = ".*.txt")
 
 
@@ -34,10 +34,12 @@ for (ou in ou_list) {
                       "2020_qtr1", 
                       "2020_qtr2", 
                       "2020_targets") 
+  
   df1a <- txs_generate(ou_df,
                        "2020_qtr2",
                        "2020_qtr3",
                        "2020_targets")
+  
   df2a <- txs_generate(ou_df,
                        "2020_qtr3",
                        "2020_qtr4",
@@ -48,8 +50,13 @@ for (ou in ou_list) {
                        "2021_qtr1",
                        "2021_targets")
   
+  df4a <- txs_generate(ou_df,
+                       "2021_qtr1",
+                       "2021_qtr2",
+                       "2021_targets")
+  
   ## Waterfall Column Order
-  ou_ou2 <- bind_rows(list(df0a, dfa, df1a, df2a, df3a)) %>% 
+  ou_ou2 <- bind_rows(list(df0a, dfa, df1a, df2a, df3a, df4a)) %>% 
     mutate(period = paste0("FY",substr(period,3,4),"Q",substr(period,9,9)))
   
   shell_df1 <- c("operatingunit",                                                         

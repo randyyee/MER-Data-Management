@@ -16,7 +16,7 @@ source("~/Randy Codebase/R/TSD/MSD_TSD_FXNS_V5.R")
 
 ## ==================== MAIN ====================
 setwd("C:/Users/pcx5/Desktop/MSD_FY20Q3_Site/MSD") # Folder 
-period <- "CleanQ1"
+period <- "PreQ2"
 ou_list <- list.files(pattern = ".*.txt")
 
 
@@ -50,6 +50,11 @@ for (ou in ou_list) {
                           "2021_qtr1",
                           "2021_targets")
   
+  df4 <- txs_adj_generate(ou_df,
+                          "2021_qtr1",
+                          "2021_qtr2",
+                          "2021_targets")
+  
   ## Waterfall Generate
   df0a <- txs_generate(ou_df, # msd_txt
                        "2019_qtr4", # prevR
@@ -74,8 +79,13 @@ for (ou in ou_list) {
                        "2021_qtr1",
                        "2021_targets")
   
+  df4a <- txs_generate(ou_df,
+                       "2021_qtr1",
+                       "2021_qtr2",
+                       "2021_targets")
+  
   ## Adjusted TX Column Order
-  ou_ou <- bind_rows(list(df0, df, df1, df2, df3)) %>% 
+  ou_ou <- bind_rows(list(df0, df, df1, df2, df3, df4)) %>% 
     mutate(period = paste0("FY",substr(period,3,4),"Q",substr(period,9,9)))
   
   shell_df <- c("operatingunit",
@@ -116,7 +126,7 @@ for (ou in ou_list) {
   ou_ou <- ou_ou[shell_df] # Column Order
   
   ## Waterfall Column Order
-  ou_ou2 <- bind_rows(list(df0a, dfa, df1a, df2a, df3a)) %>% 
+  ou_ou2 <- bind_rows(list(df0a, dfa, df1a, df2a, df3a, df4a)) %>% 
     mutate(period = paste0("FY",substr(period,3,4),"Q",substr(period,9,9)))
   
   shell_df1 <- c("operatingunit",                                                         
