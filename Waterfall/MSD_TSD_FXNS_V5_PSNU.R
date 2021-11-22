@@ -31,7 +31,7 @@ msd_import <- function(msd_txt){
       "TX_ML", #b #qtr
       "TX_RTT", #b #qtr
       "TX_NEW"#, #b #qtr
-      #"TX_PVLS" #b
+       "TX_PVLS" #b
     ))
 }
 
